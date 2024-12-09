@@ -3,8 +3,8 @@ package ar.edu.unlu.Hanabi.ModeloNew;
 import java.io.Serializable;
 
 public class Pista implements Serializable {
-    private final TipoPista tipo;           // El tipo de la pista (COLOR o NUMERO)
-    private final Object valor;             // El valor de la pista (puede ser un color o un número)
+    private final TipoPista tipo;
+    private final Object valor;
 
     public Pista(TipoPista tipo, Object valor) {
         if (tipo == null || valor == null) {

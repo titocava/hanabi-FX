@@ -2,66 +2,46 @@ package ar.edu.unlu.Hanabi.ModeloNew;
 import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto {
     private final List<Jugador> jugadores;
-    private Tablero tablero;
+    private final Tablero tablero;
     private int indiceTurnoActual;
-    //private ArrayList<Observador> observadores = new ArrayList<>();
+
 
     public JuegoHanabi()  {
         this.jugadores = new ArrayList<>();
-        this.tablero = new Tablero(jugadores);
-        this.indiceTurnoActual = 1;
-
+        this.tablero = new Tablero();
+        this.indiceTurnoActual = 0;
     }
 
     @Override
     public Jugador registrarJugador(String nombreJugador)throws RemoteException {
         if (nombreJugador == null || nombreJugador.trim().isEmpty()) {
             notificarObservadores(Eventos.ERROR_CREACION_JUGADOR);
-            throw new IllegalArgumentException("El nombre del jugador no puede estar vacío.");
-
-        }
-
+            throw new IllegalArgumentException("El nombre del jugador no puede estar vacío.");}
         if (jugadores.size() >= 5) {
             notificarObservadores(Eventos.ERROR_CREACION_JUGADOR);
             throw new IllegalStateException("No se pueden registrar más de 5 jugadores.");
-
         }
-
         for (Jugador jugador : jugadores) {
             if (jugador.getNombre().equalsIgnoreCase(nombreJugador)) {
                 throw new IllegalArgumentException("El nombre '" + nombreJugador + "' ya está en uso.");
-            }
-        }
-
+            }}
         Jugador nuevoJugador = new Jugador(nombreJugador);
         jugadores.add(nuevoJugador);
-
-        notificarObservadores(new Evento(Eventos.JUGADOR_CREADO));
-        System.out.println("asdadadasd" );
+        notificarObservadores(Eventos.JUGADOR_CREADO);
         return nuevoJugador;
     }
 
 
-    private boolean juegoListoParaIniciar(){
-        return jugadores.size() >= 2;
-    }
-
     @Override
     public void iniciarJuego() throws RemoteException {
-        if (jugadores == null || jugadores.size() < 2) {
+        if (jugadores.size() < 2) {
             throw new IllegalStateException("No se puede iniciar el juego sin al menos 2 jugadores.");
         }
-
-        //this.jugadores = new ArrayList<>(listaJugadores); // Asigna la lista recibida
-        //this.tablero = new Tablero(jugadores);
         tablero.repartirCartas(jugadores);
-
         notificarObservadores(Eventos.INICIAR_JUEGO);
         iniciarTurno();
         System.out.println("Juego iniciado con los jugadores: " + jugadores);
@@ -77,7 +57,8 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto 
         System.out.println("Es el turno de: " + jugadorEnTurno.getNombre());
     }
 
-    public void cambiarTurno() throws RemoteException {
+
+    private void cambiarTurno() throws RemoteException {
         jugadores.get(indiceTurnoActual).setJugadorTurno(false);
         indiceTurnoActual = (indiceTurnoActual + 1) % jugadores.size();
         jugadores.get(indiceTurnoActual).setJugadorTurno(true);
@@ -95,34 +76,88 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto 
     }
 
 
-
-    @Override
-    public Jugador getJugadorActual() throws RemoteException {
-        return jugadores.get(indiceTurnoActual);
+    public List<Carta> obtenerManoJugador(String idJugador) throws RemoteException {
+        Jugador jugador = jugadores.stream()
+                .filter(j -> j.getId().equals(idJugador))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado con ID: " + idJugador));
+        System.out.println("obtenerManoJugador " + jugador.getNombre());
+        return jugador.getMano();
     }
 
+
+
+
+    public List<Map<Jugador, List<Carta>>> obtenerManosRestantesJugadores(String idJugadorInstanciado, List<Jugador> listaJugadores) throws RemoteException {
+        List<Map<Jugador, List<Carta>>> manosVisiblesRestantes = new ArrayList<>();
+
+        for (Jugador jugador : listaJugadores) {
+            if (jugador.getId().equals(idJugadorInstanciado)) {
+                continue;
+            }
+            List<Carta> manoRevelada = new ArrayList<>();
+            for (Carta carta : jugador.getMano()) {
+                Carta cartaRevelada = new Carta(carta.getColor(), carta.getNumero());
+                cartaRevelada.revelar();
+                manoRevelada.add(cartaRevelada);
+            }
+            Map<Jugador, List<Carta>> jugadorYMano = new HashMap<>();
+            jugadorYMano.put(jugador, manoRevelada);
+            manosVisiblesRestantes.add(jugadorYMano);
+        }
+        return manosVisiblesRestantes;
+    }
+
+    public Jugador obtenerJugadorPorId(String idJugador) {
+        return jugadores.stream()
+                .filter(j -> j.getId().equals(idJugador))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado con ID: " + idJugador));
+    }
+
+    public Carta obtenerCartaDeMano(String idJugador, Carta cartaBuscada) {
+        Jugador jugador = obtenerJugadorPorId(idJugador);
+
+        return jugador.getMano().stream()
+                .filter(c -> c.getColor().equals(cartaBuscada.getColor()) && c.getNumero() == cartaBuscada.getNumero())
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("La carta no pertenece a la mano del jugador."));
+    }
+
+
     @Override
-    public void jugadorJuegaCarta(Jugador jugador, Carta carta) throws RemoteException {
-        if (jugador == null || carta == null) {
+    public String getJugadorActual() throws RemoteException {
+        return jugadores.get(indiceTurnoActual).getId();
+    }
+
+
+    @Override
+    public void jugadorJuegaCarta(String idJugador, Carta carta) throws RemoteException {
+        if (idJugador == null || carta == null) {
             notificarObservadores(Eventos.NO_ES_TURNO);
             throw new IllegalArgumentException("No es una carta jugable.");
         }
-        tablero.jugarCarta(jugador, carta);
-        tablero.cartaJugada(carta);
+        Jugador jugador = obtenerJugadorPorId(idJugador);
+        Carta cartaBuscada = obtenerCartaDeMano(idJugador, carta);
+        if (jugador == null) {
+            notificarObservadores(Eventos.NO_ES_TURNO);
+            throw new IllegalArgumentException("Jugador no encontrado.");
+        }
+        tablero.jugarCarta(jugador, cartaBuscada);
+        tablero.cartaJugada(cartaBuscada);
         tablero.tomarCarta(jugador);
         notificarObservadores(Eventos.JUGADOR_JUGO_CARTA);
-        verificarFinDeJuego();
         cambiarTurno();
-
-
+        verificarFinDeJuego();
     }
 
+
     @Override
-    public void jugadorDaPista(Jugador jugadorObjetivo, Pista pista) throws RemoteException {
-        if (jugadorObjetivo == null || pista == null) {
-            notificarObservadores(Eventos.NO_HAY_PISTA_DIPONIBLE);
+    public void jugadorDaPista(String idJugadorObjetivo, Pista pista) throws RemoteException {
+        if (idJugadorObjetivo == null || pista == null) {
             throw new IllegalArgumentException("El jugador objetivo y la pista no pueden ser nulos.");
         }
+        Jugador jugadorObjetivo = obtenerJugadorPorId(idJugadorObjetivo);
         tablero.darPista(jugadorObjetivo, pista);
         tablero.reducirFichaPista();
         notificarObservadores(Eventos.PISTA_DADA);
@@ -131,30 +166,36 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto 
     }
 
     @Override
-    public void jugadorDescartaCarta(Jugador jugador, Carta carta) throws RemoteException {
-        if (jugador == null || carta == null) {
+    public void jugadorDescartaCarta(String idJugador, Carta carta) throws RemoteException {
+        if (idJugador == null || carta == null) {
             notificarObservadores(Eventos.NO_ES_TURNO);
-            throw new IllegalStateException("No puedes descartar una carta porque no hay fichas de pista disponibles.");
+            throw new IllegalArgumentException("No es una carta jugable.");
         }
         if (tablero.obtenerFichasDePistaUsadas() <= 0) {
             notificarObservadores(Eventos.NO_HAY_PISTAS_USADAS);
             return;
         }
+        Jugador jugador = obtenerJugadorPorId(idJugador);
+        Carta cartaBuscada = obtenerCartaDeMano(idJugador, carta);
 
-        tablero.descartarCarta(jugador, carta);
+        if (jugador == null || cartaBuscada == null) {
+            notificarObservadores(Eventos.NO_ES_TURNO);
+            throw new IllegalStateException("No puedes descartar una carta porque no hay fichas de pista disponibles.");
+        }
+        tablero.descartarCarta(jugador, cartaBuscada);
         tablero.recuperarFichaPista();
         tablero.tomarCarta(jugador);
         notificarObservadores(Eventos.JUGADOR_DESCARTO_CARTA);
-        verificarFinDeJuego();
         cambiarTurno();
+        verificarFinDeJuego();
     }
 
     @Override
     public List<Jugador> getJugadores() throws RemoteException {
-        return new ArrayList<>(jugadores);
+        return jugadores;
     }
 
-    public Tablero getTablero() {
+    public Tablero getTablero()throws RemoteException {
         return tablero;
     }
 

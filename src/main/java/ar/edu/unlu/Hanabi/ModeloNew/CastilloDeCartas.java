@@ -49,15 +49,12 @@ public class CastilloDeCartas implements Serializable {
     }
 
     public int obtenerPuntosCastillo() {
-        // Supongamos que el castillo tiene una lista de cartas apiladas
-        int puntos = 0;
-
-        for (Carta carta : this.getCartas()) {
-            puntos += carta.getNumero(); // Sumar el número de cada carta
+        if (cartas.isEmpty()) {
+            return 0;
         }
-
-        return puntos;
+        return cartas.getLast().getNumero();
     }
+
 
     public List<Carta> getCartas() {
         return cartas;

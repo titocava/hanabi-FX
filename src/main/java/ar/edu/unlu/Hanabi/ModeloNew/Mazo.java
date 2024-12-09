@@ -51,4 +51,5 @@ public class Mazo implements Serializable {
     public boolean estaVacio() {
         return cartas.isEmpty();
     }
+
 }

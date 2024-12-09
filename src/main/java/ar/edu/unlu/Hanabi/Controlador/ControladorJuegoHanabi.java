@@ -6,31 +6,18 @@ import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 
-
-
-
 public class ControladorJuegoHanabi implements IControladorRemoto{
-
-    private IJuegoHanabiRemoto modeloRemoto;
     private IJuegoHanabiRemoto juegoHanabi;
-    private final JuegoMostrable juegoMostrable;
-    private IVista vista;
+        private IVista vista;
 
 
-    public ControladorJuegoHanabi(JuegoHanabi juegoHanabi, JuegoMostrable juegoMostrable) {
-        this.juegoHanabi = juegoHanabi;
-        this.juegoMostrable = juegoMostrable;
-
-
+    public ControladorJuegoHanabi() {
     }
     public void setVista(IVista vista) {
-
-        //vistas.add(vista);
         this.vista = vista;
     }
 
@@ -45,17 +32,6 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
 
     }
 
-    public void iniciarTurno() {
-
-        try {
-            juegoHanabi.iniciarTurno();
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-
 
     public int obtenerPuntuacion(){
         try {
@@ -66,18 +42,36 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
     }
 
     public int obtenerFichasDePistaDisponibles() {
-        return juegoMostrable.obtenerFichasDePista();
+        try {
+            return juegoHanabi.getTablero().obtenerFichasDePista();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public int obtenerFichasDeVidaDisponibles() {
-        return juegoMostrable.obtenerFichasDeVida();
+        try {
+            return juegoHanabi.getTablero().obtenerFichasDeVida();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public int obtenerFichasDePistaUsadas() {
-        return juegoMostrable.obtenerFichasDePistaUsadas();
+        try {
+            return juegoHanabi.getTablero().obtenerFichasDePistaUsadas();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public List<CastilloDeCartas> ObtenerCastilloDeCartas() {return juegoMostrable.obtenerCastillos();}
+    public List<CastilloDeCartas> ObtenerCastilloDeCartas() {
+        try {
+            return juegoHanabi.getTablero().getCastillos();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public List<Jugador> obtenerListaJugadores() {
         try {
@@ -87,35 +81,35 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
         }
     }
 
-    public List<Carta> obtenerManoJugadorNoVisible(Jugador jugadorInstanciado) {
-        return juegoMostrable.obtenerManoJugador1(jugadorInstanciado);
+    public List<Carta> obtenerManoJugadorNoVisible(String IdJugador) {
+        try {
+            return juegoHanabi.obtenerManoJugador(IdJugador);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
-    public List<Carta> obtenerManoJugadorVisible(Jugador jugadorInstanciado) {
 
-        return juegoMostrable.obtenerManoJugadorVisible(jugadorInstanciado);
+
+    public List<Map<Jugador, List<Carta>>> retornarManosVisiblesJugadores(String IdJugador, List<Jugador> lista) {
+
+        try {
+            return juegoHanabi.obtenerManosRestantesJugadores(IdJugador, lista);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public List<Map<Jugador, List<Carta>>> retornarManosVisiblesJugadores(Jugador jugadorInstanciado, List<Jugador> lista) {
-
-        return juegoMostrable.obtenerManosRestantesJugadores(jugadorInstanciado, lista);
-    }
-    public List<Object> obtenerDatosTablero() {
-        List<Object> datosTablero = new ArrayList<>();
-        datosTablero.add(juegoMostrable.obtenerCartasRestantesEnMazo());
-        datosTablero.add(juegoMostrable.obtenerFichasDeVida());
-        datosTablero.add(juegoMostrable.obtenerFichasDePistaUsadas());
-        datosTablero.add(juegoMostrable.obtenerFichasDePista());
-        datosTablero.add(juegoMostrable.obtenerCastillos());
-
-        return datosTablero;
-    }
 
 
     public  int obtenerMazo(){
-        return juegoMostrable.obtenerCartasRestantesEnMazo();
+        try {
+            return juegoHanabi.getTablero().getMazoActual();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public Jugador obtenerJugadorActual() {
+    public String obtenerJugadorActual() {
         try {
             return juegoHanabi.getJugadorActual();
         } catch (RemoteException e) {
@@ -137,123 +131,58 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
     }
 
 
-    public void jugadorJuegaCarta(Jugador jugador, Carta carta) {
-
-
+    public void jugadorJuegaCarta(String IdJugador, Carta carta) {
         try {
-            juegoHanabi.jugadorJuegaCarta(jugador, carta);
+            juegoHanabi.jugadorJuegaCarta(IdJugador, carta);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
-        }
-
-
-    }
+        }}
 
     public Jugador registrarJugador(String nombreJugador) {
-
         try {
             return juegoHanabi.registrarJugador(nombreJugador);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
-        }
+        }}
 
-
-    }
-
-    public void jugadorDaPista(Jugador objetivo, Pista pista) {
-
+    public void jugadorDaPista(String jugadorObjetivo, Pista pista) {
         try {
-            juegoHanabi.jugadorDaPista(objetivo, pista);
+            juegoHanabi.jugadorDaPista(jugadorObjetivo, pista);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
-        }
+        }}
 
-    }
-
-    public void jugadorDescartaCarta(Jugador jugador, Carta carta){
-
+    public void jugadorDescartaCarta(String idJugador, Carta carta){
         try {
-            juegoHanabi.jugadorDescartaCarta(jugador, carta);
+            juegoHanabi.jugadorDescartaCarta(idJugador, carta);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
-        }
-    }
+        }}
 
-
-    /*@Override
-    public void actualizar(Eventos evento) {
-        //for (IVista vista : vistas) {
-            switch (evento) {
-                case INICIAR_JUEGO:
-                    vista.actualizarVista();
-                    vista.mostrarMenuDeAccion();
-                    break;
-
-                case CAMBIO_TURNO:
-                    vista.mostrarMenuDeAccion();
-                    break;
-
-                case JUGADOR_JUGO_CARTA:
-                    vista.actualizarVista();
-                    break;
-
-                case NO_HAY_PISTAS_USADAS:
-                    vista.mostrarMensaje("Aún no tiene fichas de pistas usadas para descartar.");
-                    break;
-
-                case PISTA_DADA:
-                    vista.mostrarMensaje("¡Pista dada!");
-                    vista.actualizarVista();
-                    break;
-
-                case JUGADOR_DESCARTO_CARTA:
-                    vista.mostrarMensaje("¡Has descartado una carta!");
-                    vista.actualizarVista();
-                    break;
-
-                case VICTORIA:
-                    vista.mostrarMensaje("¡Victoria!");
-                    vista.mostrarPuntuacion();
-                    break;
-
-                case DERROTA:
-                    System.out.println("DERROTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAasdadadasdas" );
-                    vista.mostrarMensaje("¡Derrota!");
-                    vista.mostrarPuntuacion();
-                    System.out.println("puntos" + obtenerPuntuacion() );
-                    break;
-
-                case PUNTOS:
-                default:
-                    vista.mostrarMensaje("Evento no manejado: " + evento);
-                    break;
+    public String obtenerIdJugador(Jugador jugadorVista) {
+        try {
+            for (Jugador jugador : juegoHanabi.getJugadores()) {
+                if (jugador.getId().equals(jugadorVista.getId())) {
+                    return jugador.getId();
+                }
             }
-        //}
-    }*/
-
-
-
-
-
-
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
 
     @Override
     public <T extends IObservableRemoto> void setModeloRemoto(T modeloRemoto) throws RemoteException {
-        this.juegoHanabi = (IJuegoHanabiRemoto) modeloRemoto; // es necesario castear el modelo remoto
+        this.juegoHanabi = (IJuegoHanabiRemoto) modeloRemoto;
     }
 
     @Override
     public void actualizar(IObservableRemoto arg0, Object arg1) throws RemoteException {
-        System.out.println("actualizar");
-        if (!(arg1 instanceof Eventos)) {
-            System.out.println("Evento no válido: " + arg1);
-            return;
-        }
         Eventos evento = (Eventos) arg1;
         System.out.println(evento);
         switch (evento) {
             case INICIAR_JUEGO:
-                System.out.println("bandera iniciar partida controlador" );
                 vista.actualizarVista();
                 vista.mostrarMenuDeAccion();
                 break;
@@ -263,6 +192,7 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
                 break;
 
             case JUGADOR_JUGO_CARTA:
+                vista.mostrarMensaje("¡Has jugado una carta!");
                 vista.actualizarVista();
                 break;
 
@@ -281,30 +211,28 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
                 break;
 
             case VICTORIA:
+                vista.actualizarVista();
                 vista.mostrarMensaje("¡Victoria!");
                 vista.mostrarPuntuacion();
                 break;
 
             case DERROTA:
-                System.out.println("DERROTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAasdadadasdas" );
+                vista.actualizarVista();
+                System.out.println("DERROTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" );
                 vista.mostrarMensaje("¡Derrota!");
                 vista.mostrarPuntuacion();
-                System.out.println("puntos" + obtenerPuntuacion() );
                 break;
 
             case PUNTOS:
+
                 break;
             case JUGADOR_CREADO:
-                System.out.println("bandera de jugador" );
+                System.out.println("Jugador Creado" );
                 break;
             default:
                 vista.mostrarMensaje("Evento no manejado: " + evento);
                 break;
         }
     }
-
-
-
-
 
 }

@@ -1,23 +1,23 @@
 package ar.edu.unlu.Hanabi.ModeloNew;
 
 import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
-
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Map;
 
 public interface IJuegoHanabiRemoto extends IObservableRemoto {
 
     Jugador registrarJugador(String nombreJugador) throws RemoteException;
 
-    void jugadorJuegaCarta(Jugador jugador, Carta carta) throws RemoteException;
+    void jugadorJuegaCarta(String IdJugador, Carta carta) throws RemoteException;
 
     void iniciarJuego() throws RemoteException;
 
-    Jugador getJugadorActual() throws RemoteException;
+    String getJugadorActual() throws RemoteException;
 
-    void jugadorDaPista(Jugador jugadorObjetivo, Pista pista) throws RemoteException;
+    void jugadorDaPista(String jugadorObjetivo, Pista pista) throws RemoteException;
 
-    void jugadorDescartaCarta(Jugador jugador, Carta carta) throws RemoteException;
+    void jugadorDescartaCarta(String idJugador, Carta carta) throws RemoteException;
 
     List<Jugador> getJugadores() throws RemoteException;
 
@@ -26,4 +26,10 @@ public interface IJuegoHanabiRemoto extends IObservableRemoto {
     int puntuacion() throws RemoteException;
 
     void iniciarTurno()throws RemoteException;
+
+    Tablero getTablero() throws RemoteException;
+
+    List<Carta> obtenerManoJugador(String IdJugador) throws RemoteException;
+
+    List<Map<Jugador, List<Carta>>> obtenerManosRestantesJugadores(String IdJugador, List<Jugador> lista)throws RemoteException;
 }

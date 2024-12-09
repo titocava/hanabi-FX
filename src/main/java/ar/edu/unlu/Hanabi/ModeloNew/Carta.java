@@ -38,9 +38,9 @@ public class Carta implements Serializable {
         }
 
         if (Objects.requireNonNull(pista.getTipoPista()) == TipoPista.COLOR) {
-            return this.color.equals(pista.getValor());  // Aquí 'color' es un campo de la clase que almacena el color de la carta
+            return this.color.equals(pista.getValor());
         } else if (pista.getTipoPista() == TipoPista.NUMERO) {
-            return this.numero == (Integer) pista.getValor(); // Aquí 'numero' es un campo que almacena el número de la carta
+            return this.numero == (Integer) pista.getValor();
         }
         return false;
     }

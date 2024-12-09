@@ -9,23 +9,15 @@ public class Tablero implements Serializable {
     private final Mazo mazo;
     private final Fichas fichas;
     private final List<CastilloDeCartas> castillos;
-    private final List<Jugador> jugadores;
 
-    public Tablero(List<Jugador> jugadores) {
-
+    public Tablero() {
         this.mazo = new Mazo();
         this.fichas = new Fichas();
         this.castillos = new ArrayList<>();
-        this.jugadores = jugadores;
-
         for (ColorCarta color : ColorCarta.values()) {
             castillos.add(new CastilloDeCartas(color));
         }
     }
-
-
-
-
 
     public void repartirCartas(List<Jugador> jugadores) {
         int cartasPorJugador = (jugadores.size() <= 3) ? 5 : 4; // 5 cartas para 2-3 jugadores, 4 para 4-5 jugadores
@@ -43,15 +35,15 @@ public class Tablero implements Serializable {
         return mazo.cartasRestantes();
     }
 
+
+
     public void darPista(Jugador jugadorDestino, Pista pista) {
         if (obtenerFichasDePista() <= 0) {
             throw new IllegalStateException("No hay fichas de pista disponibles.");
         }
-
         if (jugadorDestino == null || pista == null) {
             throw new IllegalArgumentException("El jugador destino y la pista no pueden ser nulos.");
         }
-
         for (Carta carta : jugadorDestino.getMano()) {
             if (carta.coincideConPista(pista)) {
                 carta.revelar();
@@ -63,21 +55,16 @@ public class Tablero implements Serializable {
         if (jugador == null || carta == null) {
             throw new IllegalArgumentException("El jugador y la carta no pueden ser nulos.");
         }
-
         if (!jugador.getMano().contains(carta)) {
             throw new IllegalArgumentException("La carta no pertenece a la mano del jugador.");
         }
         jugador.eliminarCartaDeLaMano(carta);
-
-
-
     }
 
     public void descartarCarta(Jugador jugador, Carta carta) {
         if (obtenerFichasDePistaUsadas() <= 0) {
             throw new IllegalStateException("No hay fichas de pista disponibles.");
         }
-
         if (!jugador.getMano().contains(carta)) {
             throw new IllegalArgumentException("La carta no está en la mano del jugador.");
         }
@@ -98,12 +85,8 @@ public class Tablero implements Serializable {
         Carta cartaRobada = mazo.robarCarta();
         jugador.agregarCartaACartasEnMano(cartaRobada);
     }
-    public boolean estaVacio() {
-        return mazo.estaVacio(); // Retorna true si el mazo está vacío, false si no lo está
-    }
 
     public void cartaJugada(Carta carta) {
-        // Buscar en el castillo correspondiente el color de la carta
         CastilloDeCartas castillo = null;
         for (CastilloDeCartas c : castillos) {
             if (c.getColor() == carta.getColor()) {
@@ -126,17 +109,11 @@ public class Tablero implements Serializable {
 
 
     public int calcularPuntos() {
-        // Obtener los castillos desde el tablero
         List<CastilloDeCartas> castillos = this.getCastillos();
-
-        // Variable para acumular la puntuación
         int puntosTotales = 0;
-
-        // Recorrer cada castillo y sumar las cartas apiladas
         for (CastilloDeCartas castillo : castillos) {
-            puntosTotales += castillo.obtenerPuntosCastillo(); // Método para obtener la puntuación del castillo
+            puntosTotales += castillo.obtenerPuntosCastillo();
         }
-
         return puntosTotales;
     }
 
@@ -180,10 +157,6 @@ public class Tablero implements Serializable {
             }
         }
         return true;
-    }
-
-    public List<Jugador> obtenerJugadores() {
-        return this.jugadores;
     }
 
     public List<CastilloDeCartas> getCastillos() {
