@@ -171,6 +171,36 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
         }
         return null;
     }
+    public List<Object> obtenerDatosTablero(){
+        try {
+            return juegoHanabi.obtenerDatosTablero();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void guardarJuego(String archivo) {
+        try {
+            juegoHanabi.guardarEstadoJuego(archivo);
+            System.out.println("Juego guardado exitosamente.");
+        } catch (Exception e) {
+            System.err.println("Error al guardar el juego: " + e.getMessage());
+        }
+    }
+
+
+    public void cargarJuego(String archivo) {
+        try {
+            juegoHanabi.cargarEstadoJuego(archivo);
+            System.out.println("Juego cargado y estado restaurado exitosamente desde " + archivo);
+        } catch (RemoteException e) {
+            System.err.println("Error al cargar el juego: " + e.getMessage());
+        }
+    }
+
+
+
+
 
     @Override
     public <T extends IObservableRemoto> void setModeloRemoto(T modeloRemoto) throws RemoteException {
@@ -211,6 +241,7 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
                 break;
 
             case VICTORIA:
+                //vista.deshabilitarMenuAccion();
                 vista.actualizarVista();
                 vista.mostrarMensaje("¡Victoria!");
                 vista.mostrarPuntuacion();
@@ -218,6 +249,7 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
 
             case DERROTA:
                 vista.actualizarVista();
+                vista.deshabilitarMenuAccion();
                 System.out.println("DERROTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" );
                 vista.mostrarMensaje("¡Derrota!");
                 vista.mostrarPuntuacion();

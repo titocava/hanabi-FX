@@ -28,4 +28,6 @@ public interface IVista {
     void mostrarPuntuacion();
 
     void setControlador(ControladorJuegoHanabi controlador);
+
+    void deshabilitarMenuAccion();
 }

@@ -1,6 +1,7 @@
 package ar.edu.unlu.Hanabi.ModeloNew;
 
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -8,6 +9,8 @@ public class Carta implements Serializable {
     private final ColorCarta color;
     private final int numero;
     private boolean revelada;
+    @Serial
+    private static final long serialVersionUID = 5L;
 
     public Carta(ColorCarta color, int numero) {
         if (numero < 1 || numero > 5) {

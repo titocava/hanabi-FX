@@ -1,9 +1,13 @@
 package ar.edu.unlu.Hanabi.ModeloNew;
 
+import java.io.Serial;
+
 public class Fichas implements java.io.Serializable {
     private int fichasPistaDisponibles;
     private int fichasVida;
     private int fichasPistaUsadas;
+    @Serial
+    private static final long serialVersionUID = 6L;
 
 
     public Fichas() {

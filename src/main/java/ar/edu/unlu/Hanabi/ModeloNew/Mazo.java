@@ -1,5 +1,6 @@
 package ar.edu.unlu.Hanabi.ModeloNew;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,6 +8,8 @@ import java.util.List;
 
 public class Mazo implements Serializable {
     private final List<Carta> cartas;
+    @Serial
+    private static final long serialVersionUID = 7L;
 
 
     public Mazo() {

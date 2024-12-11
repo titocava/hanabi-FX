@@ -2,27 +2,23 @@ package ar.edu.unlu.Hanabi.Vista;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
+import java.rmi.RemoteException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 import ar.edu.unlu.Hanabi.Controlador.ControladorJuegoHanabi;
 import ar.edu.unlu.Hanabi.ModeloNew.*;
 
 public class VistaGraficaJugador extends JFrame implements IVista {
-    // Componentes principales
     private ControladorJuegoHanabi controlador;
     private final Jugador jugador;
-
-    // Paneles principales
     private JPanel panelIzquierda;
     private JPanel panelDerecha;
-
-    // Subpaneles
     private JPanel panelFichas;
     private JPanel panelJugadores;
     private JPanel panelMenuAccion;
@@ -30,14 +26,15 @@ public class VistaGraficaJugador extends JFrame implements IVista {
     private JPanel panelManosOtrosJugadores;
     private JPanel panelCastillosYMazo;
     private boolean banderaSeleccionCarta = false;
-    private JDialog notificacionActiva;
+    private JPanel panelGuardar;
 
     public VistaGraficaJugador(ControladorJuegoHanabi controlador, Jugador jugador) {
         this.controlador = controlador;
         this.jugador = jugador;
         this.controlador.setVista(this);
         setTitle("Hanabi - Juego de Cartas " + controlador.obtenerNombreJugadorReturn(jugador));
-        setSize(1000, 600);
+        setSize(1024, 720); // Tamaño inicial
+        setMinimumSize(new Dimension(800, 600)); // Tamaño mínimo
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         inicializarPaneles();
@@ -59,10 +56,14 @@ public class VistaGraficaJugador extends JFrame implements IVista {
         panelJugadores = new JPanel();
         panelMenuAccion = new JPanel();
         panelManoJugador = new JPanel();
-        configurarMenuAccion();
+        panelGuardar = new JPanel();
+
         panelIzquierda.add(panelFichas);
         panelIzquierda.add(panelJugadores);
+        panelIzquierda.add(panelGuardar);
         panelIzquierda.add(panelManoJugador);
+        configurarMenuAccion();
+        configurarPanelGuardar();
     }
 
     private void inicializarPanelDerecha() {
@@ -362,15 +363,49 @@ public class VistaGraficaJugador extends JFrame implements IVista {
         panelJugadores.repaint();
     }
 
+    private void configurarPanelGuardar() {
+        panelGuardar.setLayout(new FlowLayout(FlowLayout.CENTER));
+        panelGuardar.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JButton btnGuardar = new JButton("Guardar Partida");
+        btnGuardar.addActionListener(e -> {
+            String archivo = System.getProperty("user.home") + "/HanabiPartidaGuardada.txt";
+            controlador.guardarJuego(archivo);
+            JOptionPane.showMessageDialog(this, "Partida guardada exitosamente en " + archivo,
+                    "Guardar Partida", JOptionPane.INFORMATION_MESSAGE);
+        });
+        panelGuardar.add(btnGuardar);
+
+        JButton btnCargar = new JButton("Cargar Partida");
+        btnCargar.addActionListener(e -> {
+            String archivo = System.getProperty("user.home") + "/HanabiPartidaGuardada.txt";
+            try {
+                controlador.cargarJuego(archivo);
+                JOptionPane.showMessageDialog(this, "Partida cargada exitosamente desde " + archivo,
+                        "Cargar Partida", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error al cargar la partida: " + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        });
+        panelGuardar.add(btnCargar);
+    }
+
+
+
+
+
     @Override
     public void mostrarMenuDeAccion() {
-        System.out.println("Bandera");
-
         if (controlador.obtenerJugadorActual().equals(controlador.obtenerIdJugador(jugador))) {
             panelIzquierda.add(panelMenuAccion);
+
         } else {
             panelIzquierda.remove(panelMenuAccion);
         }
+        revalidate(); // Actualiza el layout
+        repaint();    // Redibuja la ventana
 
     }
 
@@ -385,39 +420,72 @@ public class VistaGraficaJugador extends JFrame implements IVista {
     public void setControlador(ControladorJuegoHanabi controlador) {
         this.controlador = controlador;
     }
+    @Override
+    public void deshabilitarMenuAccion(){
+        panelIzquierda.remove(panelMenuAccion);
+    }
+
+
+    private final List<JWindow> notificacionesActivas = new CopyOnWriteArrayList<>();
+    private final int ESPACIO_ENTRE_NOTIFICACIONES = 10;
+    private static final int DURACION_NOTIFICACION = 5000; // Duración en milisegundos
+    private static final float VELOCIDAD_DESVANECIMIENTO = 0.05f; // Velocidad de opacidad
 
 
     private void mostrarNotificacionEmergente(String mensaje) {
-        if (notificacionActiva != null && notificacionActiva.isVisible()) {
-            notificacionActiva.dispose();
-        }
-        // Crear el nuevo diálogo
-        notificacionActiva = new JDialog(this, false);
-        notificacionActiva.setUndecorated(true);
-        notificacionActiva.setLayout(new BorderLayout());
+        JWindow notificacion = new JWindow();
         JLabel lblMensaje = new JLabel(mensaje, SwingConstants.CENTER);
         lblMensaje.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         lblMensaje.setOpaque(true);
         lblMensaje.setBackground(new Color(0, 128, 255));
         lblMensaje.setForeground(Color.WHITE);
         lblMensaje.setFont(lblMensaje.getFont().deriveFont(Font.BOLD, 14f));
-        notificacionActiva.add(lblMensaje, BorderLayout.CENTER);
-        notificacionActiva.pack();
-        Point location = calcularUbicacionNotificacion(notificacionActiva);
-        notificacionActiva.setLocation(location);
-        notificacionActiva.setVisible(true);
-        // Cerrar automáticamente la notificación después de 3 segundos
-        new Timer(3000, e -> notificacionActiva.dispose()).start();
+        notificacion.getContentPane().add(lblMensaje);
+        notificacion.pack();
+
+        // Posicionar notificación
+        Point location = calcularUbicacionNotificacion(notificacion);
+        location.y -= (notificacionesActivas.size() * (notificacion.getHeight() + ESPACIO_ENTRE_NOTIFICACIONES));
+        notificacion.setLocation(location);
+        notificacionesActivas.add(notificacion);
+        notificacion.setVisible(true);
+        Timer timer = new Timer(50, new ActionListener() {
+            private float opacity = 1.0f;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                opacity -= VELOCIDAD_DESVANECIMIENTO;
+                if (opacity <= 0) {
+                    notificacion.dispose();
+                    notificacionesActivas.remove(notificacion);
+                    actualizarPosiciones();
+                    ((Timer) e.getSource()).stop();
+                } else {
+                    notificacion.setOpacity(opacity);
+                }
+            }
+        });
+        timer.setInitialDelay(DURACION_NOTIFICACION);
+        timer.start();
     }
 
-    private Point calcularUbicacionNotificacion(JDialog notificacion) {
-        // Obtener las dimensiones de la ventana principal y de la notificación
-        int x = this.getWidth() - notificacion.getWidth() - 20;
-        int y = this.getHeight() - notificacion.getHeight() - 20;
+    private void actualizarPosiciones() {
+        int yBase = this.getHeight() - 20;
+        for (int i = 0; i < notificacionesActivas.size(); i++) {
+            JWindow notificacion = notificacionesActivas.get(i);
+            Point location = calcularUbicacionNotificacion(notificacion);
+            location.y -= (i * (notificacion.getHeight() + ESPACIO_ENTRE_NOTIFICACIONES));
+            notificacion.setLocation(location);
+        }
+    }
 
-        // Convertir a coordenadas absolutas de la pantalla
+    private Point calcularUbicacionNotificacion(JWindow notificacion) {
+        int x = this.getWidth() - notificacion.getWidth() - 20;
+        int y = this.getHeight() - 20;
         Point locationOnScreen = this.getLocationOnScreen();
         return new Point(locationOnScreen.x + x, locationOnScreen.y + y);
     }
+
+
 
 }

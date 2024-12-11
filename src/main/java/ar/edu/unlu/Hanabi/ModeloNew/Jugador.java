@@ -1,5 +1,6 @@
 package ar.edu.unlu.Hanabi.ModeloNew;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,8 @@ public class Jugador implements Serializable {
     private boolean turno;
     private final String nombre;
     private final String id;
+    @Serial
+    private static final long serialVersionUID = 3L;
 
 
     public Jugador(String nombre) {

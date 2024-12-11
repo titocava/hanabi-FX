@@ -31,5 +31,11 @@ public interface IJuegoHanabiRemoto extends IObservableRemoto {
 
     List<Carta> obtenerManoJugador(String IdJugador) throws RemoteException;
 
-    List<Map<Jugador, List<Carta>>> obtenerManosRestantesJugadores(String IdJugador, List<Jugador> lista)throws RemoteException;
+    List<Map<Jugador, List<Carta>>> obtenerManosRestantesJugadores(String IdJugador, List<Jugador> lista) throws RemoteException;
+
+    List<Object> obtenerDatosTablero() throws RemoteException;
+
+    void guardarEstadoJuego(String archivo) throws RemoteException;
+
+    void cargarEstadoJuego(String archivo) throws RemoteException;
 }

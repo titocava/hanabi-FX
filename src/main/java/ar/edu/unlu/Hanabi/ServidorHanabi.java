@@ -20,7 +20,7 @@ public class ServidorHanabi {
             System.out.println("Servidor iniciado y esperando conexiones de clientes...");
         } catch (RemoteException | RMIMVCException e) {
             System.err.println("Error al iniciar el servidor: " + e.getMessage());
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }

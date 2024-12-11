@@ -1,5 +1,6 @@
 package ar.edu.unlu.Hanabi.ModeloNew;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,8 @@ public class Tablero implements Serializable {
     private final Mazo mazo;
     private final Fichas fichas;
     private final List<CastilloDeCartas> castillos;
+    @Serial
+    private static final long serialVersionUID = 2L;
 
     public Tablero() {
         this.mazo = new Mazo();

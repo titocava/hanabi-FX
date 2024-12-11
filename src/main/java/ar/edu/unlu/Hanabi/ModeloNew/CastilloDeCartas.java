@@ -1,5 +1,6 @@
 package ar.edu.unlu.Hanabi.ModeloNew;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.List;
 public class CastilloDeCartas implements Serializable {
     private final ColorCarta color;
     private final List<Carta> cartas;
+    @Serial
+    private static final long serialVersionUID = 4L;
 
     public CastilloDeCartas(ColorCarta color) {
         this.color = color;
