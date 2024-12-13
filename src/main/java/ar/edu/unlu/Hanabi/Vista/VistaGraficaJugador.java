@@ -404,8 +404,8 @@ public class VistaGraficaJugador extends JFrame implements IVista {
         } else {
             panelIzquierda.remove(panelMenuAccion);
         }
-        revalidate(); // Actualiza el layout
-        repaint();    // Redibuja la ventana
+        revalidate();
+        repaint();
 
     }
 
@@ -423,12 +423,14 @@ public class VistaGraficaJugador extends JFrame implements IVista {
     @Override
     public void deshabilitarMenuAccion(){
         panelIzquierda.remove(panelMenuAccion);
+        revalidate();
+        repaint();
     }
 
 
     private final List<JWindow> notificacionesActivas = new CopyOnWriteArrayList<>();
     private final int ESPACIO_ENTRE_NOTIFICACIONES = 10;
-    private static final int DURACION_NOTIFICACION = 5000; // Duración en milisegundos
+    private static final int DURACION_NOTIFICACION = 3000; // Duración en milisegundos
     private static final float VELOCIDAD_DESVANECIMIENTO = 0.05f; // Velocidad de opacidad
 
 

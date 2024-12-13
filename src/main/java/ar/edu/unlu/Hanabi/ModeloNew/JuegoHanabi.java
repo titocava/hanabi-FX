@@ -65,15 +65,9 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
 
     public void cargarEstadoJuego(String archivo) throws RemoteException {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivo))) {
-            // Lee el estado guardado desde el archivo
             JuegoHanabiEstado estadoCargado = (JuegoHanabiEstado) ois.readObject();
-
-            // Actualiza el modelo con el estado cargado
-            this.setEstado(estadoCargado); // Asegúrate de que tienes un método setEstado en tu modelo
-
-            // Notifica a los observadores para actualizar las vistas
+            this.setEstado(estadoCargado);
             notificarObservadores(Eventos.INICIAR_JUEGO);
-
             System.out.println("Estado del juego cargado exitosamente: " + estadoCargado);
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -81,8 +75,8 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
         }
     }
     public void setEstado(JuegoHanabiEstado estado) {
-        this.jugadores = estado.getJugadores(); // Asumiendo que tienes un método getJugadores en JuegoHanabiEstado
-        this.tablero = estado.getTablero();     // Similar para el tablero y otros elementos
+        this.jugadores = estado.getJugadores();
+        this.tablero = estado.getTablero();
     }
 
 

@@ -250,6 +250,7 @@ public class VistaConsolaGraficaJugador  extends JFrame implements IVista {
 
     @Override
     public void actualizarVista() {
+        txtSalida.setText("");
         mostrarInformacionDeJugadoresInicial();
 
     }
@@ -293,7 +294,7 @@ public class VistaConsolaGraficaJugador  extends JFrame implements IVista {
             mostrarMensaje("La mano está vacía.");
             return;
         }
-        mostrarMensaje("Cartas visibles:");
+        mostrarMensaje("Cartas Mano:");
         for (int i = 0; i < cartas.size(); i++) {
             Carta carta = cartas.get(i);
             if (carta.esRevelada()) {
