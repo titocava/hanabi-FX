@@ -9,14 +9,16 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
     private List<Jugador> jugadores;
     private Tablero tablero;
     private int indiceTurnoActual;
+    private GestorTurnos gestorTurnos;
     @Serial
     private static final long serialVersionUID = 1L;
 
 
-    public JuegoHanabi()  {
+    public JuegoHanabi() {
         this.jugadores = new ArrayList<>();
         this.tablero = new Tablero();
-        this.indiceTurnoActual = 0;
+        //this.indiceTurnoActual = 0;
+        this.gestorTurnos = new GestorTurnos();
     }
 
     @Override
@@ -45,64 +47,26 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
             throw new IllegalStateException("No se puede iniciar el juego sin al menos 2 jugadores.");
         }
         tablero.repartirCartas(jugadores);
-        notificarObservadores(Eventos.INICIAR_JUEGO);
         iniciarTurno();
+        notificarObservadores(Eventos.INICIAR_JUEGO);
         System.out.println("Juego iniciado con los jugadores: " + jugadores);
     }
-
-    public void guardarEstadoJuego(String archivo) throws RemoteException {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivo))) {
-            JuegoHanabiEstado estado = new JuegoHanabiEstado(
-                    getJugadores(),
-                    getTablero()
-            );
-            oos.writeObject(estado);
-            System.out.println("Estado del juego guardado exitosamente en " + archivo);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void cargarEstadoJuego(String archivo) throws RemoteException {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivo))) {
-            JuegoHanabiEstado estadoCargado = (JuegoHanabiEstado) ois.readObject();
-            this.setEstado(estadoCargado);
-            notificarObservadores(Eventos.INICIAR_JUEGO);
-            System.out.println("Estado del juego cargado exitosamente: " + estadoCargado);
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            throw new RemoteException("Error al cargar el juego", e);
-        }
-    }
-    public void setEstado(JuegoHanabiEstado estado) {
-        this.jugadores = estado.getJugadores();
-        this.tablero = estado.getTablero();
-    }
-
-
-
-
-
-
-
 
     public void iniciarTurno() throws RemoteException {
         if (jugadores.isEmpty()) {
             throw new IllegalStateException("No hay jugadores registrados.");
         }
-        Jugador jugadorEnTurno = jugadores.get(indiceTurnoActual);
-        jugadorEnTurno.setJugadorTurno(true);
+        gestorTurnos.inicializarColaTurnos(jugadores);
+        Jugador jugadorEnTurno = gestorTurnos.getJugadorActual();
         System.out.println("Es el turno de: " + jugadorEnTurno.getNombre());
     }
 
 
     private void cambiarTurno() throws RemoteException {
-        jugadores.get(indiceTurnoActual).setJugadorTurno(false);
-        indiceTurnoActual = (indiceTurnoActual + 1) % jugadores.size();
-        jugadores.get(indiceTurnoActual).setJugadorTurno(true);
-        System.out.println("Ahora es el turno de: " + jugadores.get(indiceTurnoActual).getNombre());
+        gestorTurnos.cambiarTurno();
         notificarObservadores(Eventos.CAMBIO_TURNO);
         verificarFinDeJuego();
+
     }
 
     public void verificarFinDeJuego() throws RemoteException {
@@ -129,7 +93,6 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
 
     public List<Map<Jugador, List<Carta>>> obtenerManosRestantesJugadores(String idJugadorInstanciado, List<Jugador> listaJugadores) throws RemoteException {
         List<Map<Jugador, List<Carta>>> manosVisiblesRestantes = new ArrayList<>();
-
         for (Jugador jugador : listaJugadores) {
             if (jugador.getId().equals(idJugadorInstanciado)) {
                 continue;
@@ -156,7 +119,6 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
 
     public Carta obtenerCartaDeMano(String idJugador, Carta cartaBuscada) {
         Jugador jugador = obtenerJugadorPorId(idJugador);
-
         return jugador.getMano().stream()
                 .filter(c -> c.getColor().equals(cartaBuscada.getColor()) && c.getNumero() == cartaBuscada.getNumero())
                 .findFirst()
@@ -170,14 +132,80 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
         datosTablero.add(tablero.obtenerFichasDePistaUsadas());
         datosTablero.add(tablero.obtenerFichasDePista());
         datosTablero.add(tablero.getCastillos());
-
         return datosTablero;
     }
 
 
+    public void guardarEstadoJuego() throws RemoteException {
+        String archivo = System.getProperty("user.home") + "/HanabiPartidaGuardada.dat";
+        try (ObjectOutputStream guardar = new ObjectOutputStream(new FileOutputStream(archivo))) {
+            JuegoHanabiEstado estado = new JuegoHanabiEstado(
+                    getJugadores(),
+                    getTablero()
+            );
+            guardar.writeObject(estado);
+            System.out.println("Estado del juego guardado exitosamente en " + archivo);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cargarEstadoJuego() throws RemoteException {
+        String directorioEstados = "C:\\Users\\JHC";
+        String nombreArchivo = "HanabiPartidaGuardada.dat";
+        File archivoEstado = new File(directorioEstados, nombreArchivo);
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivoEstado))) {
+
+            JuegoHanabiEstado estadoCargado = (JuegoHanabiEstado) ois.readObject();
+
+            for (Jugador jugador : jugadores) {
+                System.out.println("Jugador previo a cargar: " + jugador.getNombre() + ", ID: " + jugador.getId());
+            }
+
+            this.setEstado(estadoCargado);
+
+            for (Jugador jugador : jugadores) {
+                System.out.println("Jugador cargado: " + jugador.getNombre() + ", ID: " + jugador.getId());
+            }
+
+            notificarObservadores(Eventos.INICIAR_JUEGO);
+            System.out.println("Estado del juego cargado exitosamente: " + estadoCargado);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            throw new RemoteException("Error al cargar el juego", e);
+        }
+    }
+    /*public void setEstado(JuegoHanabiEstado estado) {
+        this.tablero = estado.getTablero();
+        for (Jugador jugadorActual : jugadores) {
+            for (Jugador jugadorEstado : estado.getJugadores()) {
+                List <Carta> manoEstado= jugadorEstado.getMano();
+                jugadorActual.setMano(manoEstado);
+            }
+        }
+    }*/
+    private void setEstado(JuegoHanabiEstado estado) {
+        this.tablero = estado.getTablero();
+
+
+        //acá reparto las cartas si coinciden el id del usuario cargado actual, con el que está guardado
+        for (Jugador jugadorActual : jugadores) {
+            for (Jugador jugadorEstado : estado.getJugadores()) {
+                if (jugadorActual.getId().equals(jugadorEstado.getId())) {
+                    jugadorActual.setMano(new ArrayList<>(jugadorEstado.getMano()));
+                    break;
+                }
+            }
+        }
+    }
+
+
+
+
     @Override
     public String getJugadorActual() throws RemoteException {
-        return jugadores.get(indiceTurnoActual).getId();
+        //return jugadores.get(indiceTurnoActual).getId();
+        return gestorTurnos.getJugadorActual().getId();
     }
 
 
@@ -196,7 +224,6 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
         tablero.jugarCarta(jugador, cartaBuscada);
         tablero.cartaJugada(cartaBuscada);
         tablero.tomarCarta(jugador);
-
         notificarObservadores(Eventos.JUGADOR_JUGO_CARTA);
         cambiarTurno();
 
@@ -213,6 +240,7 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
         tablero.reducirFichaPista();
         notificarObservadores(Eventos.PISTA_DADA);
         cambiarTurno();
+
 
     }
 
@@ -236,7 +264,6 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
         tablero.descartarCarta(jugador, cartaBuscada);
         tablero.recuperarFichaPista();
         tablero.tomarCarta(jugador);
-
         notificarObservadores(Eventos.JUGADOR_DESCARTO_CARTA);
         cambiarTurno();
     }

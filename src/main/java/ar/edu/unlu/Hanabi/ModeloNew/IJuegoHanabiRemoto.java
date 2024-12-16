@@ -25,7 +25,7 @@ public interface IJuegoHanabiRemoto extends IObservableRemoto {
 
     int puntuacion() throws RemoteException;
 
-    void iniciarTurno()throws RemoteException;
+    //void iniciarTurno()throws RemoteException;
 
     Tablero getTablero() throws RemoteException;
 
@@ -35,7 +35,7 @@ public interface IJuegoHanabiRemoto extends IObservableRemoto {
 
     List<Object> obtenerDatosTablero() throws RemoteException;
 
-    void guardarEstadoJuego(String archivo) throws RemoteException;
+    void guardarEstadoJuego() throws RemoteException;
 
-    void cargarEstadoJuego(String archivo) throws RemoteException;
+    void cargarEstadoJuego() throws RemoteException;
 }

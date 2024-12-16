@@ -179,9 +179,9 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
         }
     }
 
-    public void guardarJuego(String archivo) {
+    public void guardarJuego() {
         try {
-            juegoHanabi.guardarEstadoJuego(archivo);
+            juegoHanabi.guardarEstadoJuego();
             System.out.println("Juego guardado exitosamente.");
         } catch (Exception e) {
             System.err.println("Error al guardar el juego: " + e.getMessage());
@@ -189,10 +189,10 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
     }
 
 
-    public void cargarJuego(String archivo) {
+    public void cargarJuego() {
         try {
-            juegoHanabi.cargarEstadoJuego(archivo);
-            System.out.println("Juego cargado y estado restaurado exitosamente desde " + archivo);
+            juegoHanabi.cargarEstadoJuego();
+            System.out.println("Juego cargado y estado restaurado exitosamente desde ");
         } catch (RemoteException e) {
             System.err.println("Error al cargar el juego: " + e.getMessage());
         }
@@ -241,7 +241,7 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
                 break;
 
             case VICTORIA:
-                //vista.deshabilitarMenuAccion();
+                vista.deshabilitarMenuAccion();
                 vista.actualizarVista();
                 vista.mostrarMensaje("¡Victoria!");
                 vista.mostrarPuntuacion();

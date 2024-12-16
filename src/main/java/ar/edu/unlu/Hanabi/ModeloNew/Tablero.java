@@ -97,7 +97,6 @@ public class Tablero implements Serializable {
                 break;
             }
         }
-
         if (castillo != null) {
             boolean apilada = castillo.apilarCarta(carta);
             if (apilada) {
@@ -105,9 +104,9 @@ public class Tablero implements Serializable {
                 return;
             }
         }
-
         desecharCarta(carta);
         reducirFichaVida();
+
     }
 
 
@@ -162,9 +161,11 @@ public class Tablero implements Serializable {
         return true;
     }
 
+
     public List<CastilloDeCartas> getCastillos() {
         return castillos;
     }
+
 
 
 

@@ -369,19 +369,19 @@ public class VistaGraficaJugador extends JFrame implements IVista {
 
         JButton btnGuardar = new JButton("Guardar Partida");
         btnGuardar.addActionListener(e -> {
-            String archivo = System.getProperty("user.home") + "/HanabiPartidaGuardada.txt";
-            controlador.guardarJuego(archivo);
-            JOptionPane.showMessageDialog(this, "Partida guardada exitosamente en " + archivo,
+
+            controlador.guardarJuego();
+            JOptionPane.showMessageDialog(this, "Partida guardada exitosamente",
                     "Guardar Partida", JOptionPane.INFORMATION_MESSAGE);
         });
         panelGuardar.add(btnGuardar);
 
         JButton btnCargar = new JButton("Cargar Partida");
         btnCargar.addActionListener(e -> {
-            String archivo = System.getProperty("user.home") + "/HanabiPartidaGuardada.txt";
+            //String archivo = System.getProperty("user.home") + "/HanabiPartidaGuardada.txt";
             try {
-                controlador.cargarJuego(archivo);
-                JOptionPane.showMessageDialog(this, "Partida cargada exitosamente desde " + archivo,
+                controlador.cargarJuego();
+                JOptionPane.showMessageDialog(this, "Partida cargada exitosamente",
                         "Cargar Partida", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Error al cargar la partida: " + ex.getMessage(),

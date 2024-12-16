@@ -2,13 +2,15 @@ package ar.edu.unlu.Hanabi.ModeloNew;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class Jugador implements Serializable {
-    private final List<Carta> mano;
-    private boolean turno;
+    private List<Carta> mano;
+    //private boolean turno;
     private final String nombre;
     private final String id;
     @Serial
@@ -21,13 +23,10 @@ public class Jugador implements Serializable {
         }
         this.nombre = nombre;
         this.mano = new ArrayList<>();
-        this.turno = false;
-        this.id = generarIdUnico();
+        //this.turno = false;
+        this.id = generarIdDesdeNombre(nombre);
     }
 
-    private String generarIdUnico() {
-        return UUID.randomUUID().toString();
-    }
 
     public String getId() {
         return id;
@@ -39,23 +38,37 @@ public class Jugador implements Serializable {
         }
     }
 
-    public boolean eliminarCartaDeLaMano(Carta carta) {
-        return mano.remove(carta);
+    public void setMano(List <Carta> mano) {
+        this.mano = mano;
+    }
+
+    public void eliminarCartaDeLaMano(Carta carta) {
+        mano.remove(carta);
     }
 
     public List<Carta> getMano() {
         return mano;
     }
 
-    public void setJugadorTurno(boolean turno) {
+    /*public void setJugadorTurno(boolean turno) {
         this.turno = turno;
-    }
+    }*/
 
     public String getNombre() {
         return nombre;
     }
 
-    public int obtenerCantidadDeCartasEnMano() {
-        return mano.size();
+    private String generarIdDesdeNombre(String nombre) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] hashBytes = md.digest(nombre.getBytes(StandardCharsets.UTF_8));
+            StringBuilder idBuilder = new StringBuilder();
+            for (byte b : hashBytes) {
+                idBuilder.append(String.format("%02x", b));
+            }
+            return idBuilder.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Error al generar ID desde el nombre", e);
+        }
     }
 }
