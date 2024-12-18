@@ -185,6 +185,7 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
             System.out.println("Juego guardado exitosamente.");
         } catch (Exception e) {
             System.err.println("Error al guardar el juego: " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -195,6 +196,25 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
             System.out.println("Juego cargado y estado restaurado exitosamente desde ");
         } catch (RemoteException e) {
             System.err.println("Error al cargar el juego: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void guardarHistorialJuego() {
+        try {
+            juegoHanabi.guardarHistorialJuego();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    // Método para leer y mostrar el historial del juego
+    public List<Object[]>  cargarHistorialJuego() {
+        try {
+            return juegoHanabi.leerHistorialJuego();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
     }
 

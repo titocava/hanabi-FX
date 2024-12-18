@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.rmi.RemoteException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -364,21 +366,17 @@ public class VistaGraficaJugador extends JFrame implements IVista {
     }
 
     private void configurarPanelGuardar() {
-        panelGuardar.setLayout(new FlowLayout(FlowLayout.CENTER));
+        panelGuardar.setLayout(new GridLayout(2, 2, 5, 5));
         panelGuardar.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
         JButton btnGuardar = new JButton("Guardar Partida");
         btnGuardar.addActionListener(e -> {
-
             controlador.guardarJuego();
             JOptionPane.showMessageDialog(this, "Partida guardada exitosamente",
                     "Guardar Partida", JOptionPane.INFORMATION_MESSAGE);
         });
         panelGuardar.add(btnGuardar);
-
         JButton btnCargar = new JButton("Cargar Partida");
         btnCargar.addActionListener(e -> {
-            //String archivo = System.getProperty("user.home") + "/HanabiPartidaGuardada.txt";
             try {
                 controlador.cargarJuego();
                 JOptionPane.showMessageDialog(this, "Partida cargada exitosamente",
@@ -390,7 +388,56 @@ public class VistaGraficaJugador extends JFrame implements IVista {
             }
         });
         panelGuardar.add(btnCargar);
+        JButton btnGuardarHistorial = new JButton("Guardar Historial");
+        btnGuardarHistorial.addActionListener(e -> {
+            try {
+                controlador.guardarHistorialJuego();
+                JOptionPane.showMessageDialog(this, "Historial guardado exitosamente",
+                        "Guardar Historial", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error al guardar el historial: " + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        });
+        panelGuardar.add(btnGuardarHistorial);
+        JButton btnMostrarHistorial = new JButton("Mostrar Historial");
+        btnMostrarHistorial.addActionListener(e -> {
+            try {
+                List<Object[]> historial = controlador.cargarHistorialJuego();
+                if (historial.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "No hay registros en el historial.",
+                            "Mostrar Historial", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    StringBuilder mensaje = new StringBuilder("Historial de partidas:\n\n");
+                    int partidaNumero = 1;
+
+                    for (Object[] registro : historial) {
+                        LocalDateTime fecha = (LocalDateTime) registro[0];
+                        JuegoHanabiEstado estado = (JuegoHanabiEstado) registro[1];
+                        mensaje.append("Partida ").append(partidaNumero++).append("\n");
+                        mensaje.append("Fecha: ").append(fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))).append("\n");
+                        mensaje.append("Jugadores:\n");
+                        for (Jugador jugador : estado.getJugadores()) {
+                            mensaje.append("  - ").append(jugador.getNombre()).append(": ").append(jugador.getMano()).append("\n");
+                        }
+                        mensaje.append("Tablero:\n");
+                        mensaje.append("  - Vidas: ").append(estado.getTablero().obtenerFichasDeVida()).append("\n");
+                        mensaje.append("  - Fichas de pista: ").append(estado.getTablero().obtenerFichasDePista()).append("\n");
+                        mensaje.append("  - Fichas de pista usadas: ").append(estado.getTablero().obtenerFichasDePistaUsadas()).append("\n\n");
+                    }
+                    JOptionPane.showMessageDialog(this, mensaje.toString(),
+                            "Mostrar Historial", JOptionPane.INFORMATION_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error al leer el historial: " + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        });
+        panelGuardar.add(btnMostrarHistorial);
     }
+
 
 
 

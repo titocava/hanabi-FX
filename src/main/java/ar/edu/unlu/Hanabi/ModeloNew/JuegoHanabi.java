@@ -3,6 +3,7 @@ import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
 
 import java.io.*;
 import java.rmi.RemoteException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto, Serializable {
@@ -69,7 +70,7 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
 
     }
 
-    public void verificarFinDeJuego() throws RemoteException {
+    private void verificarFinDeJuego() throws RemoteException {
         if (tablero.todosLosCastillosCompletos()) {
             notificarObservadores(Eventos.VICTORIA);
         } else if (tablero.getMazoActual() == 0 || tablero.obtenerFichasDeVida() == 0) {
@@ -155,19 +156,9 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
         String nombreArchivo = "HanabiPartidaGuardada.dat";
         File archivoEstado = new File(directorioEstados, nombreArchivo);
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivoEstado))) {
-
             JuegoHanabiEstado estadoCargado = (JuegoHanabiEstado) ois.readObject();
-
-            for (Jugador jugador : jugadores) {
-                System.out.println("Jugador previo a cargar: " + jugador.getNombre() + ", ID: " + jugador.getId());
-            }
-
+            validarJugadores(estadoCargado);
             this.setEstado(estadoCargado);
-
-            for (Jugador jugador : jugadores) {
-                System.out.println("Jugador cargado: " + jugador.getNombre() + ", ID: " + jugador.getId());
-            }
-
             notificarObservadores(Eventos.INICIAR_JUEGO);
             System.out.println("Estado del juego cargado exitosamente: " + estadoCargado);
         } catch (IOException | ClassNotFoundException e) {
@@ -175,20 +166,9 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
             throw new RemoteException("Error al cargar el juego", e);
         }
     }
-    /*public void setEstado(JuegoHanabiEstado estado) {
-        this.tablero = estado.getTablero();
-        for (Jugador jugadorActual : jugadores) {
-            for (Jugador jugadorEstado : estado.getJugadores()) {
-                List <Carta> manoEstado= jugadorEstado.getMano();
-                jugadorActual.setMano(manoEstado);
-            }
-        }
-    }*/
+
     private void setEstado(JuegoHanabiEstado estado) {
         this.tablero = estado.getTablero();
-
-
-        //acá reparto las cartas si coinciden el id del usuario cargado actual, con el que está guardado
         for (Jugador jugadorActual : jugadores) {
             for (Jugador jugadorEstado : estado.getJugadores()) {
                 if (jugadorActual.getId().equals(jugadorEstado.getId())) {
@@ -196,6 +176,62 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
                     break;
                 }
             }
+        }
+    }
+
+    private void validarJugadores(JuegoHanabiEstado estado) {
+        if (jugadores.size() != estado.getJugadores().size()) {
+            throw new IllegalStateException("Los jugadares guardados no coinciden con los jugaodores actuales.");
+        }
+        for (Jugador jugadorActual : jugadores) {
+            boolean jugadorEncontrado = false;
+            for (Jugador jugadorEstado : estado.getJugadores()) {
+                if (jugadorActual.getId().equals(jugadorEstado.getId())) {
+                    jugadorEncontrado = true;
+                    break;
+                }
+            }
+            if (!jugadorEncontrado) {
+                throw new IllegalStateException("Los jugadares guardados no coinciden con los jugaodores actuales.");
+            }
+        }
+    }
+
+
+
+    public void guardarHistorialJuego() throws RemoteException {
+        String archivoHistorial = System.getProperty("user.home") + "/HanabiHistorialGuardados.dat";
+        try {
+            List<Object[]> historial;
+            File file = new File(archivoHistorial);
+            if (file.exists()) {
+                try (ObjectInputStream leer = new ObjectInputStream(new FileInputStream(archivoHistorial))) {
+                    historial = (List<Object[]>) leer.readObject();
+                }
+            } else {
+                historial = new ArrayList<>();
+            }
+            JuegoHanabiEstado estado = new JuegoHanabiEstado(getJugadores(), getTablero());
+            Object[] nuevoRegistro = {LocalDateTime.now(), estado};
+            historial.add(nuevoRegistro);
+            try (ObjectOutputStream guardar = new ObjectOutputStream(new FileOutputStream(archivoHistorial))) {
+                guardar.writeObject(historial);
+            }
+            System.out.println("Historial actualizado exitosamente.");
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error al actualizar el historial: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
+    public List<Object[]> leerHistorialJuego() throws RemoteException {
+        String archivoHistorial = System.getProperty("user.home") + "/HanabiHistorialGuardados.dat";
+        try (ObjectInputStream leer = new ObjectInputStream(new FileInputStream(archivoHistorial))) {
+            return (List<Object[]>) leer.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
 
