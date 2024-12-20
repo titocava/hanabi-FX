@@ -4,9 +4,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 
-public class AgregarRegistroRanking {
-    //@Serial
-    //private static final long serialVersionUID = 19L;
+public class AgregarRegistroRanking implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 19L;
     private int puntosTotales;
     private int partidasJugadas;
 
