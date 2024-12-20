@@ -209,7 +209,18 @@ public class ControladorJuegoHanabi implements IControladorRemoto{
 
     }
 
-    // Método para leer y mostrar el historial del juego
+   public String mostrarRanking() throws RemoteException {
+        try {
+            return juegoHanabi.mostrarRanking();
+
+        }catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+
+
+   }
+
+
     public List<Object[]>  cargarHistorialJuego() {
         try {
             return juegoHanabi.leerHistorialJuego();

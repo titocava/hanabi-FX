@@ -3,11 +3,9 @@ package ar.edu.unlu.Hanabi.Vista;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -326,18 +324,24 @@ public class VistaGraficaJugador extends JFrame implements IVista {
         cartaPanel.setPreferredSize(new Dimension(width, height));
         cartaPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
         cartaPanel.setLayout(new BorderLayout());
-        cartaPanel.setBackground(getColorFondo(carta.getColor()));
 
-        JLabel label = carta.esRevelada()
-                ? new JLabel(String.valueOf(carta.getNumero()), SwingConstants.CENTER)
-                : new JLabel("Oculta", SwingConstants.CENTER);
-
-        label.setFont(new Font("Arial", Font.BOLD, 14));
-        label.setForeground(Color.BLACK);
-        cartaPanel.add(label, BorderLayout.CENTER);
+        if (carta.esRevelada()) {
+            cartaPanel.setBackground(getColorFondo(carta.getColor()));
+            JLabel label = new JLabel(String.valueOf(carta.getNumero()), SwingConstants.CENTER);
+            label.setFont(new Font("Arial", Font.BOLD, 14));
+            label.setForeground(Color.BLACK);
+            cartaPanel.add(label, BorderLayout.CENTER);
+        } else {
+            cartaPanel.setBackground(Color.BLACK);
+            JLabel label = new JLabel("Oculta", SwingConstants.CENTER);
+            label.setFont(new Font("Arial", Font.BOLD, 14));
+            label.setForeground(Color.WHITE);
+            cartaPanel.add(label, BorderLayout.CENTER);
+        }
 
         return cartaPanel;
     }
+
 
     private Color getColorFondo(ColorCarta colorCarta) {
         switch (colorCarta) {
@@ -368,14 +372,14 @@ public class VistaGraficaJugador extends JFrame implements IVista {
     private void configurarPanelGuardar() {
         panelGuardar.setLayout(new GridLayout(2, 2, 5, 5));
         panelGuardar.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        JButton btnGuardar = new JButton("Guardar Partida");
+        JButton btnGuardar = new JButton("G Partida");
         btnGuardar.addActionListener(e -> {
             controlador.guardarJuego();
             JOptionPane.showMessageDialog(this, "Partida guardada exitosamente",
                     "Guardar Partida", JOptionPane.INFORMATION_MESSAGE);
         });
         panelGuardar.add(btnGuardar);
-        JButton btnCargar = new JButton("Cargar Partida");
+        JButton btnCargar = new JButton("C Partida");
         btnCargar.addActionListener(e -> {
             try {
                 controlador.cargarJuego();
@@ -388,7 +392,7 @@ public class VistaGraficaJugador extends JFrame implements IVista {
             }
         });
         panelGuardar.add(btnCargar);
-        JButton btnGuardarHistorial = new JButton("Guardar Historial");
+        JButton btnGuardarHistorial = new JButton("G Historial");
         btnGuardarHistorial.addActionListener(e -> {
             try {
                 controlador.guardarHistorialJuego();
@@ -401,7 +405,7 @@ public class VistaGraficaJugador extends JFrame implements IVista {
             }
         });
         panelGuardar.add(btnGuardarHistorial);
-        JButton btnMostrarHistorial = new JButton("Mostrar Historial");
+        JButton btnMostrarHistorial = new JButton("C Historial");
         btnMostrarHistorial.addActionListener(e -> {
             try {
                 List<Object[]> historial = controlador.cargarHistorialJuego();
@@ -436,6 +440,25 @@ public class VistaGraficaJugador extends JFrame implements IVista {
             }
         });
         panelGuardar.add(btnMostrarHistorial);
+
+        JButton btnMostrarRanking = new JButton("C Ranking");
+        btnMostrarRanking.addActionListener(e -> {
+            try {
+
+                String ranking = controlador.mostrarRanking();
+                if (ranking.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "No hay registros en el ranking.",
+                            "Mostrar Ranking", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, ranking, "Mostrar Ranking", JOptionPane.INFORMATION_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error al leer el ranking: " + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        });
+        panelGuardar.add(btnMostrarRanking);
     }
 
 

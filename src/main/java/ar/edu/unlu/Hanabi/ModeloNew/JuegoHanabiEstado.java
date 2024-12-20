@@ -1,10 +1,8 @@
 package ar.edu.unlu.Hanabi.ModeloNew;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 
 public class JuegoHanabiEstado implements Serializable {
     private static final long serialVersionUID = 10L;

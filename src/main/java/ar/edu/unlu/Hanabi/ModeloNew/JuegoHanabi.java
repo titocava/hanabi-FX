@@ -11,6 +11,7 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
     private Tablero tablero;
     private int indiceTurnoActual;
     private GestorTurnos gestorTurnos;
+    private static Ranking ranking;
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -20,6 +21,7 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
         this.tablero = new Tablero();
         //this.indiceTurnoActual = 0;
         this.gestorTurnos = new GestorTurnos();
+       ranking = new Ranking();
     }
 
     @Override
@@ -71,10 +73,15 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
     }
 
     private void verificarFinDeJuego() throws RemoteException {
+        int puntos = tablero.calcularPuntos();
         if (tablero.todosLosCastillosCompletos()) {
             notificarObservadores(Eventos.VICTORIA);
+            ranking.agregarRegistroConPersistencia(jugadores, puntos);
+
         } else if (tablero.getMazoActual() == 0 || tablero.obtenerFichasDeVida() == 0) {
             notificarObservadores(Eventos.DERROTA);
+            ranking.agregarRegistroConPersistencia(jugadores, puntos);
+
         }
 
     }
@@ -172,7 +179,7 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
         for (Jugador jugadorActual : jugadores) {
             for (Jugador jugadorEstado : estado.getJugadores()) {
                 if (jugadorActual.getId().equals(jugadorEstado.getId())) {
-                    jugadorActual.setMano(new ArrayList<>(jugadorEstado.getMano()));
+                    jugadorActual.setMano(jugadorEstado.getMano());
                     break;
                 }
             }
@@ -232,6 +239,16 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             return new ArrayList<>();
+        }
+    }
+
+    public String mostrarRanking()throws RemoteException {
+        try {
+            return ranking.mostrarRanking();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -320,14 +337,13 @@ public class JuegoHanabi extends ObservableRemoto implements IJuegoHanabiRemoto,
     }
 
     public int puntuacion() throws RemoteException {
-        notificarObservadores(Eventos.PUNTOS);
-        return tablero.calcularPuntos();
+        int puntos = tablero.calcularPuntos();
+        //notificarObservadores(Eventos.PUNTOS);
+        //ranking.agregarRegistroConPersistencia(jugadores, puntos);
+        return puntos;
     }
 
 
 }
-
-
-
 
 

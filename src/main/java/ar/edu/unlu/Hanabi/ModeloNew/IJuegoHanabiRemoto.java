@@ -40,4 +40,5 @@ public interface IJuegoHanabiRemoto extends IObservableRemoto {
     void cargarEstadoJuego() throws RemoteException;
     List<Object[]> leerHistorialJuego() throws RemoteException;
     void guardarHistorialJuego() throws RemoteException;
+    String mostrarRanking()throws RemoteException;
 }
